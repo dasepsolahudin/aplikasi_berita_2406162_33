@@ -1,13 +1,11 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../controllers/home_controller.dart';
-import '../../data/models/article_model.dart';
 import 'news_card_widget.dart';
 import '../utils/helper.dart' as helper;
 import '../../routes/route_name.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -32,6 +30,86 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  // --- WIDGET BARU UNTUK MEMBUAT NAVIGATION DRAWER ---
+  Widget _buildDrawer(BuildContext context) {
+    final theme = Theme.of(context);
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          DrawerHeader(
+            decoration: BoxDecoration(color: theme.colorScheme.primary),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Image.asset(
+                  'assets/images/icon.png',
+                  height: 60,
+                  // Anda bisa menambahkan error builder jika perlu
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Berita Anda',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.home_outlined),
+            title: const Text('Home'),
+            onTap: () {
+              Navigator.pop(context); // Tutup drawer
+              context.goNamed(RouteName.home);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.person_outline),
+            title: const Text('Profile'),
+            onTap: () {
+              Navigator.pop(context);
+              context.goNamed(RouteName.profile);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.bookmark_border),
+            title: const Text('Bookmark'),
+            onTap: () {
+              Navigator.pop(context);
+              context.goNamed(RouteName.bookmark);
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.settings_outlined),
+            title: const Text('Settings'),
+            onTap: () {
+              Navigator.pop(context);
+              context.pushNamed(RouteName.settings);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.logout, color: theme.colorScheme.error),
+            title: Text(
+              'Logout',
+              style: TextStyle(color: theme.colorScheme.error),
+            ),
+            onTap: () async {
+              // Logika untuk logout
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.clear(); // Hapus semua data sesi
+              if (mounted) {
+                context.goNamed(RouteName.login);
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -39,9 +117,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return ChangeNotifierProvider(
       create: (context) => HomeController(),
+      // PERUBAHAN: Scaffold sekarang memiliki properti 'drawer'
       child: Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
         appBar: _buildAppBar(context, theme),
+        drawer: _buildDrawer(context), // Tambahkan drawer di sini
         body: SafeArea(
           child: GestureDetector(
             onTap: () {
@@ -158,6 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // PERUBAHAN: AppBar sekarang menggunakan Builder untuk mendapatkan context yang benar
   AppBar _buildAppBar(BuildContext context, ThemeData theme) {
     return AppBar(
       automaticallyImplyLeading: false,
@@ -168,7 +249,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Image.asset('assets/images/icon.png', height: 32, width: 32),
           helper.hsSmall,
           Text(
-            "BeritaKu",
+            "Beritame",
             style: theme.textTheme.headlineSmall?.copyWith(
               color: theme.colorScheme.onBackground,
               fontWeight: FontWeight.bold,
@@ -177,17 +258,19 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       actions: [
-        IconButton(
-          icon: Icon(
-            Icons.menu,
-            color: theme.colorScheme.onBackground,
-            size: 28,
+        // Builder digunakan untuk memastikan context yang digunakan adalah turunan dari Scaffold
+        Builder(
+          builder: (context) => IconButton(
+            icon: Icon(
+              Icons.menu,
+              color: theme.colorScheme.onBackground,
+              size: 28,
+            ),
+            onPressed: () {
+              // Fungsi untuk membuka drawer
+              Scaffold.of(context).openDrawer();
+            },
           ),
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Menu button clicked!')),
-            );
-          },
         ),
         const SizedBox(width: 8),
       ],

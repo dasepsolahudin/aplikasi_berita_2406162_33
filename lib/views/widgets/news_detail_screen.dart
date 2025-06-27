@@ -1,11 +1,8 @@
-// lib/views/widgets/news_detail_screen.dart
-// ignore_for_file: deprecated_member_use
-
-import 'dart:io'; // Import untuk File
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-// import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../data/models/article_model.dart';
 import '../utils/helper.dart' as helper;
@@ -15,24 +12,7 @@ class NewsDetailScreen extends StatelessWidget {
 
   const NewsDetailScreen({super.key, required this.article});
 
-  // Future<void> _launchURL(BuildContext context, String? urlString) async {
-  //   if (urlString == null || urlString.isEmpty) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       const SnackBar(content: Text('URL tidak tersedia untuk artikel ini.')),
-  //     );
-  //     return;
-  //   }
-  //   final Uri url = Uri.parse(urlString);
-  //   if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-  //     debugPrint('Could not launch $urlString');
-  //     if (context.mounted) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text('Tidak bisa membuka link: $urlString')),
-  //       );
-  //     }
-  //   }
-  // }
-
+  // Fungsi helper untuk placeholder dan error gambar (tidak berubah)
   Widget _buildLoadingPlaceholder(
     BuildContext context,
     ThemeData theme,
@@ -192,17 +172,20 @@ class NewsDetailScreen extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
         actions: [
+          // --- PERUBAHAN FUNGSI SHARE DI SINI ---
           IconButton(
             icon: Icon(
               Icons.share_outlined,
               color: theme.appBarTheme.foregroundColor,
             ),
             onPressed: () {
-              debugPrint('Tombol Share ditekan untuk: ${article.title}');
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Fitur Share belum diimplementasikan.'),
-                ),
+              // Teks yang akan dibagikan
+              final String shareText =
+                  "Baca artikel menarik ini: ${article.title}\n\n${article.url ?? 'Aplikasi Berita Anda'}";
+              // Menggunakan Share.share untuk memunculkan dialog share
+              Share.share(
+                shareText,
+                subject: "Artikel dari Berita Anda: ${article.title}",
               );
             },
           ),
@@ -213,6 +196,7 @@ class NewsDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
+            // Konten detail berita tidak ada perubahan, tetap sama
             Card(
               margin: const EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 0),
               elevation: 3.0,
@@ -332,33 +316,6 @@ class NewsDetailScreen extends StatelessWidget {
                       ),
                     ),
                   helper.vsLarge,
-                  // if (article.url != null && article.url!.isNotEmpty)
-                  //   Center(
-                  //     child: ElevatedButton.icon(
-                  //       icon: const Icon(
-                  //         Icons.open_in_browser_rounded,
-                  //         size: 20,
-                  //       ),
-                  //       label: Text(
-                  //         'Baca Selengkapnya di ${article.sourceName ?? "Sumber"}',
-                  //       ),
-                  //       onPressed: () {
-                  //         _launchURL(context, article.url);
-                  //       },
-                  //       style: ElevatedButton.styleFrom(
-                  //         backgroundColor: colorScheme.primary,
-                  //         foregroundColor: colorScheme.onPrimary,
-                  //         padding: const EdgeInsets.symmetric(
-                  //           horizontal: 24,
-                  //           vertical: 12,
-                  //         ),
-                  //         shape: RoundedRectangleBorder(
-                  //           borderRadius: BorderRadius.circular(25.0),
-                  //         ),
-                  //       ),
-                  //     ),
-                  //   ),
-                  // helper.vsLarge,
                 ],
               ),
             ),

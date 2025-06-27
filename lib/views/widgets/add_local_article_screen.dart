@@ -1,6 +1,3 @@
-// lib/views/widgets/add_local_article_screen.dart
-// ignore_for_file: deprecated_member_use, use_build_context_synchronously, duplicate_ignore
-
 import 'dart:io';
 import 'package:inews/controllers/local_article_controller.dart';
 import 'package:flutter/material.dart';
@@ -25,7 +22,7 @@ class _AddLocalArticleScreenState extends State<AddLocalArticleScreen> {
   final TextEditingController _contentController = TextEditingController();
   final TextEditingController _tagsController = TextEditingController();
   String? _selectedCategory;
-  File? _selectedImageFile; // <-- Diaktifkan kembali
+  File? _selectedImageFile;
 
   final List<String> _categories = [
     'Technology',
@@ -128,19 +125,14 @@ class _AddLocalArticleScreenState extends State<AddLocalArticleScreen> {
     if (mounted) {
       if (result['success']) {
         final Article newArticleFromServer = result['article'];
-
         final localArticleController = Provider.of<LocalArticleController>(
           context,
           listen: false,
         );
-
-        // 3. Panggil metode untuk menyimpan artikel secara lokal
         await localArticleController.addNewlyCreatedArticle(
           newArticleFromServer,
         );
-        // ------------------------------------------
 
-        // Lanjutkan alur yang sudah ada
         await _showSuccessDialog();
 
         _titleController.clear();
@@ -171,17 +163,61 @@ class _AddLocalArticleScreenState extends State<AddLocalArticleScreen> {
         builder: (context, controller, child) {
           final ThemeData theme = Theme.of(context);
           return Scaffold(
-            appBar: AppBar(title: const Text("Publish New Article")),
+            appBar: AppBar(
+              // PERUBAHAN: Mengubah warna teks judul secara spesifik
+              title: Text(
+                "Publish New Article",
+                style: theme.appBarTheme.titleTextStyle?.copyWith(
+                  color: theme.colorScheme.onBackground,
+                ),
+              ),
+              elevation: 0,
+              backgroundColor: theme.scaffoldBackgroundColor,
+            ),
+            backgroundColor: theme.scaffoldBackgroundColor,
+            bottomNavigationBar: Padding(
+              padding: EdgeInsets.fromLTRB(
+                16.0,
+                16.0,
+                16.0,
+                MediaQuery.of(context).viewInsets.bottom + 16.0,
+              ),
+              child: ElevatedButton(
+                onPressed: controller.isSaving
+                    ? null
+                    : () => _saveArticle(controller),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: theme.colorScheme.onPrimary,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  textStyle: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                child: controller.isSaving
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        ),
+                      )
+                    : const Text('Publish Now'),
+              ),
+            ),
             body: AbsorbPointer(
               absorbing: controller.isSaving,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      // --- UI Pemilih Gambar Diaktifkan Kembali ---
+                      // --- Area Unggah Gambar dengan Gaya Baru ---
                       GestureDetector(
                         onTap: () => _showImageSourceActionSheet(context),
                         child: Container(
@@ -190,7 +226,10 @@ class _AddLocalArticleScreenState extends State<AddLocalArticleScreen> {
                           decoration: BoxDecoration(
                             color: theme.cardColor,
                             borderRadius: BorderRadius.circular(12.0),
-                            border: Border.all(color: theme.dividerColor),
+                            border: Border.all(
+                              color: theme.dividerColor,
+                              width: 1,
+                            ),
                           ),
                           child: _selectedImageFile != null
                               ? ClipRRect(
@@ -205,8 +244,8 @@ class _AddLocalArticleScreenState extends State<AddLocalArticleScreen> {
                                   children: [
                                     Icon(
                                       Icons.add_photo_alternate_outlined,
-                                      size: 40,
-                                      color: theme.hintColor,
+                                      size: 50,
+                                      color: theme.hintColor.withOpacity(0.7),
                                     ),
                                     helper.vsSmall,
                                     Text(
@@ -219,71 +258,48 @@ class _AddLocalArticleScreenState extends State<AddLocalArticleScreen> {
                       ),
                       helper.vsLarge,
 
+                      // --- Formulir dengan Gaya Baru ---
                       Text(
                         "News Details",
-                        style: theme.textTheme.titleMedium?.copyWith(
+                        style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: theme.textTheme.bodyLarge?.color,
                         ),
                       ),
                       helper.vsMedium,
 
                       _buildTextField(
+                        context: context,
                         controller: _titleController,
                         labelText: "Title",
                         hintText: "Enter news title",
                         validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
+                          if (value == null || value.trim().isEmpty)
                             return 'Title cannot be empty.';
-                          }
-                          if (value.trim().length < 10) {
+                          if (value.trim().length < 10)
                             return 'Title must be at least 10 characters.';
-                          }
                           return null;
                         },
                       ),
-                      helper.vsMedium,
+
                       Text(
-                        'Select Category*',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          color: theme.textTheme.bodyMedium?.color,
+                        "Category*",
+                        style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      helper.vsSuperTiny,
+                      helper.vsSmall,
                       DropdownButtonFormField<String>(
                         value: _selectedCategory,
                         hint: Text(
                           'Select category',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.hintColor,
-                          ),
+                          style: TextStyle(color: theme.hintColor),
                         ),
                         icon: Icon(
                           Icons.keyboard_arrow_down_rounded,
                           color: theme.hintColor,
                         ),
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: theme.textTheme.bodyLarge?.color,
-                        ),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: theme.brightness == Brightness.dark
-                              ? theme.inputDecorationTheme.fillColor
-                              : helper.cGrey.withOpacity(0.7),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                        ),
+                        style: theme.textTheme.bodyLarge,
+                        decoration: _inputDecoration(theme, 'Select category'),
                         dropdownColor: theme.cardColor,
                         items: _categories.map((String category) {
                           return DropdownMenuItem<String>(
@@ -300,87 +316,98 @@ class _AddLocalArticleScreenState extends State<AddLocalArticleScreen> {
                             value == null ? 'Please select a category' : null,
                         autovalidateMode: AutovalidateMode.onUserInteraction,
                       ),
-                      helper.vsMedium,
+                      helper.vsLarge,
 
                       _buildTextField(
+                        context: context,
                         controller: _contentController,
                         labelText: "Add News/Article",
                         hintText: "Type News/Article Here ...",
                         maxLines: 8,
                         keyboardType: TextInputType.multiline,
                         validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
+                          if (value == null || value.trim().isEmpty)
                             return 'Content cannot be empty.';
-                          }
-                          if (value.trim().length < 20) {
+                          if (value.trim().length < 20)
                             return 'Content must be at least 20 characters.';
-                          }
                           return null;
                         },
                       ),
-                      helper.vsMedium,
 
                       _buildTextField(
+                        context: context,
                         controller: _tagsController,
-                        labelText: "Add Tag",
+                        labelText: "Add Tag (Optional)",
                         hintText: "Enter tags, separated by commas",
-                        validator: (value) {
-                          if (value != null &&
-                              value.trim().isNotEmpty &&
-                              value.trim().length < 3) {
-                            return 'Tag must be at least 3 characters if provided.';
-                          }
-                          return null;
-                        },
                       ),
-                      helper.vsLarge,
                     ],
                   ),
                 ),
               ),
             ),
-            bottomNavigationBar: Padding(
-              padding: EdgeInsets.fromLTRB(
-                16.0,
-                8.0,
-                16.0,
-                MediaQuery.of(context).padding.bottom + 16.0,
-              ),
-              child: ElevatedButton(
-                onPressed: () => _saveArticle(controller),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  foregroundColor: theme.colorScheme.onPrimary,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-                child: controller.isSaving
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Text(
-                            controller.statusMessage.isNotEmpty
-                                ? controller.statusMessage
-                                : 'Menyimpan...',
-                          ),
-                        ],
-                      )
-                    : const Text('Publish Now'),
-              ),
-            ),
           );
         },
       ),
+    );
+  }
+
+  // Helper untuk dekorasi input yang konsisten
+  InputDecoration _inputDecoration(ThemeData theme, String hintText) {
+    return InputDecoration(
+      hintText: hintText,
+      filled: true,
+      fillColor: theme.cardColor,
+      hintStyle: TextStyle(color: theme.hintColor),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: theme.dividerColor),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: theme.dividerColor),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: theme.colorScheme.primary, width: 2.0),
+      ),
+    );
+  }
+
+  // Helper untuk membuat Text Field
+  Widget _buildTextField({
+    required BuildContext context,
+    required TextEditingController controller,
+    required String labelText,
+    required String hintText,
+    int maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
+  }) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$labelText${validator != null ? '*' : ''}',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        helper.vsSmall,
+        TextFormField(
+          controller: controller,
+          maxLines: maxLines,
+          keyboardType: keyboardType,
+          style: theme.textTheme.bodyLarge,
+          decoration: _inputDecoration(theme, hintText),
+          validator: validator,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
+          textCapitalization: maxLines > 1
+              ? TextCapitalization.sentences
+              : TextCapitalization.words,
+        ),
+        helper.vsLarge,
+      ],
     );
   }
 
@@ -447,88 +474,6 @@ class _AddLocalArticleScreenState extends State<AddLocalArticleScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String labelText,
-    required String hintText,
-    int maxLines = 1,
-    TextInputType keyboardType = TextInputType.text,
-    String? Function(String?)? validator,
-    Widget? prefixIcon,
-  }) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '$labelText*',
-          style: theme.textTheme.titleSmall?.copyWith(
-            color: theme.textTheme.bodyMedium?.color,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        helper.vsSuperTiny,
-        TextFormField(
-          controller: controller,
-          maxLines: maxLines,
-          keyboardType: keyboardType,
-          style: theme.textTheme.bodyLarge?.copyWith(
-            color: theme.textTheme.bodyLarge?.color,
-          ),
-          decoration: InputDecoration(
-            hintText: hintText,
-            hintStyle: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.hintColor,
-            ),
-            prefixIcon: prefixIcon,
-            filled: true,
-            fillColor: theme.brightness == Brightness.dark
-                ? theme.inputDecorationTheme.fillColor
-                : helper.cGrey.withOpacity(0.7),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: theme.colorScheme.primary,
-                width: 1.5,
-              ),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: theme.colorScheme.error,
-                width: 1.0,
-              ),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: theme.colorScheme.error,
-                width: 1.5,
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
-          ),
-          validator: validator,
-          autovalidateMode: AutovalidateMode.onUserInteraction,
-          textCapitalization: maxLines > 1
-              ? TextCapitalization.sentences
-              : TextCapitalization.words,
-        ),
-      ],
     );
   }
 }

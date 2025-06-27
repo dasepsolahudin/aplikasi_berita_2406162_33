@@ -1,12 +1,13 @@
-// lib/controllers/home_controller.dart
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/news_api_service.dart';
 import '../data/models/article_model.dart';
-import '../services/database_helper.dart';
 
 class HomeController with ChangeNotifier {
   final NewsApiService _newsApiService = NewsApiService();
-  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  // Hapus _dbHelper
+  // final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
   List<Article> _articles = [];
   List<Article> get articles => _articles;
@@ -39,13 +40,22 @@ class HomeController with ChangeNotifier {
     notifyListeners();
   }
 
+  // Diubah untuk menggunakan SharedPreferences
   Future<void> _loadBookmarkedStatus() async {
     try {
-      final bookmarks = await _dbHelper.getAllBookmarks();
-      _bookmarkedArticleUrls = bookmarks
-          .map((article) => article.url!)
-          .where((url) => url.isNotEmpty)
-          .toSet();
+      final prefs = await SharedPreferences.getInstance();
+      final List<String>? articlesJsonList = prefs.getStringList('bookmarked_articles');
+      if (articlesJsonList != null) {
+        final bookmarks = articlesJsonList
+            .map((jsonString) => Article.fromJson(jsonDecode(jsonString)))
+            .toList();
+        _bookmarkedArticleUrls = bookmarks
+            .map((article) => article.url!)
+            .where((url) => url.isNotEmpty)
+            .toSet();
+      } else {
+        _bookmarkedArticleUrls = {};
+      }
     } catch (e) {
       print("HomeController: Error loading bookmark statuses: $e");
     }
@@ -60,11 +70,8 @@ class HomeController with ChangeNotifier {
     notifyListeners();
 
     try {
-      print("Mencoba mengambil semua berita...");
-      // Selalu mengambil semua berita tanpa filter kategori
       _articles = await _newsApiService.fetchTopHeadlines(category: null);
     } catch (e) {
-      print("Gagal mengambil berita. Error: $e");
       _setError(e.toString());
     } finally {
       await _loadBookmarkedStatus();
@@ -90,7 +97,6 @@ class HomeController with ChangeNotifier {
       await _loadBookmarkedStatus();
     } catch (e) {
       _setError(e.toString());
-      _articles = [];
     } finally {
       _setLoading(false);
     }
@@ -101,6 +107,7 @@ class HomeController with ChangeNotifier {
     return _bookmarkedArticleUrls.contains(articleUrl);
   }
 
+  // Diubah untuk menggunakan SharedPreferences
   Future<void> toggleBookmark(Article article) async {
     if (article.url == null || article.url!.isEmpty) {
       _setError("Artikel tidak memiliki URL yang valid untuk di-bookmark.");
@@ -108,24 +115,25 @@ class HomeController with ChangeNotifier {
       return;
     }
 
-    final bool currentlyBookmarked = isArticleBookmarked(article.url);
-    bool successOperation;
+    final prefs = await SharedPreferences.getInstance();
+    final List<String> articlesJsonList =
+        prefs.getStringList('bookmarked_articles') ?? [];
+    List<Article> bookmarks = articlesJsonList
+        .map((json) => Article.fromJson(jsonDecode(json)))
+        .toList();
 
-    if (currentlyBookmarked) {
-      _bookmarkedArticleUrls.remove(article.url!);
-      successOperation = await _dbHelper.removeBookmark(article.url!);
-      if (!successOperation) {
-        _bookmarkedArticleUrls.add(article.url!);
-        _setError("Gagal menghapus bookmark dari database.");
-      }
+    if (_bookmarkedArticleUrls.contains(article.url)) {
+      _bookmarkedArticleUrls.remove(article.url);
+      bookmarks.removeWhere((a) => a.url == article.url);
     } else {
       _bookmarkedArticleUrls.add(article.url!);
-      successOperation = await _dbHelper.addBookmark(article);
-      if (!successOperation) {
-        _bookmarkedArticleUrls.remove(article.url!);
-        _setError("Gagal menambahkan bookmark ke database.");
-      }
+      bookmarks.insert(0, article);
     }
+
+    final List<String> newArticlesJsonList =
+        bookmarks.map((a) => jsonEncode(a.toJson())).toList();
+    await prefs.setStringList('bookmarked_articles', newArticlesJsonList);
+
     notifyListeners();
   }
 }

@@ -1,4 +1,3 @@
-// lib/services/image_upload_service.dart
 import 'dart:io';
 import 'package:cloudinary_public/cloudinary_public.dart';
 

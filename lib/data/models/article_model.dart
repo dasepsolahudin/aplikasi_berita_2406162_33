@@ -1,4 +1,3 @@
-// lib/data/models/article_model.dart
 class Article {
   final String? sourceId;
   final String? sourceName;

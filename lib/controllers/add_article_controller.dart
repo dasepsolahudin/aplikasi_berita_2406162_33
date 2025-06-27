@@ -1,8 +1,7 @@
-// lib/controllers/add_article_controller.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
 import '../services/news_api_service.dart';
-import '../services/image_upload_service.dart'; // <-- Import service baru
+import '../services/image_upload_service.dart';
 
 class AddArticleController with ChangeNotifier {
   final NewsApiService _newsApiService = NewsApiService();

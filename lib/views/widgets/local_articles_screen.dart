@@ -1,7 +1,3 @@
-// lib/views/widgets/local_articles_screen.dart
-// import 'dart:io';
-// ignore_for_file: deprecated_member_use
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../controllers/local_article_controller.dart';
@@ -9,8 +5,6 @@ import '../../controllers/local_article_controller.dart';
 import '../../data/models/article_model.dart';
 import '../utils/helper.dart' as helper;
 import 'news_card_widget.dart';
-// import 'package:go_router/go_router.dart';
-// import '../../routes/route_name.dart';
 
 class LocalArticlesScreen extends StatelessWidget {
   const LocalArticlesScreen({super.key});
@@ -48,8 +42,9 @@ class LocalArticlesScreen extends StatelessWidget {
                       },
                     ),
                     helper.hsLarge,
+                    // PERUBAHAN: Judul halaman diubah agar lebih jelas
                     Text(
-                      "Lokal berita anda",
+                      "Artikel Saya",
                       style: theme.textTheme.headlineSmall?.copyWith(
                         color: theme.colorScheme.primary,
                         fontWeight: FontWeight.bold,
@@ -61,38 +56,42 @@ class LocalArticlesScreen extends StatelessWidget {
             ),
           ),
           Expanded(
-            // Gunakan Consumer untuk mendengarkan perubahan pada LocalArticleController
             child: Consumer<LocalArticleController>(
               builder: (context, localArticleController, child) {
                 final List<Article> articles =
                     localArticleController.localArticles;
 
+                // PERUBAHAN: Pesan saat daftar kosong dibuat lebih informatif
                 if (articles.isEmpty) {
                   return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.article_outlined,
-                          size: 80,
-                          color: theme.hintColor.withOpacity(0.6),
-                        ),
-                        helper.vsMedium,
-                        Text(
-                          'No local articles yet.',
-                          style: textTheme.titleMedium?.copyWith(
-                            color: theme.hintColor,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 40.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.post_add_outlined,
+                            size: 80,
+                            color: theme.hintColor.withOpacity(0.6),
                           ),
-                        ),
-                        helper.vsSmall,
-                        Text(
-                          'Tap the "+" button to add your first article.',
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: theme.hintColor,
+                          helper.vsMedium,
+                          Text(
+                            'Anda belum mempublikasikan artikel',
+                            style: textTheme.titleMedium?.copyWith(
+                              color: theme.textTheme.bodyLarge?.color,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
+                          helper.vsSmall,
+                          Text(
+                            "Tekan tombol '+' di bawah untuk mulai menulis artikel pertama Anda.",
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: theme.hintColor,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 } else {
@@ -103,17 +102,16 @@ class LocalArticlesScreen extends StatelessWidget {
                       final article = articles[index];
                       return NewsCardWidget(
                         article: article,
-                        isBookmarked:
-                            false, // Untuk artikel lokal, bookmark mungkin tidak relevan
+                        isBookmarked: false,
                         onBookmarkTap: () {
-                          // Fungsi ini sekarang akan menghapus artikel lokal
+                          // Fungsi untuk menghapus artikel lokal
                           showDialog(
                             context: context,
                             builder: (BuildContext ctx) {
                               return AlertDialog(
-                                title: const Text('Delete Article?'),
+                                title: const Text('Hapus Artikel?'),
                                 content: Text(
-                                  'Are you sure you want to delete "${article.title}"? This action cannot be undone.',
+                                  'Apakah Anda yakin ingin menghapus "${article.title}"? Aksi ini tidak bisa dibatalkan.',
                                 ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(15.0),
@@ -123,7 +121,7 @@ class LocalArticlesScreen extends StatelessWidget {
                                 actions: <Widget>[
                                   TextButton(
                                     child: Text(
-                                      'Cancel',
+                                      'Batal',
                                       style: TextStyle(
                                         color:
                                             theme.textTheme.bodyMedium?.color,
@@ -135,7 +133,7 @@ class LocalArticlesScreen extends StatelessWidget {
                                   ),
                                   TextButton(
                                     child: Text(
-                                      'Delete',
+                                      'Hapus',
                                       style: TextStyle(
                                         color: theme.colorScheme.error,
                                         fontWeight: FontWeight.bold,
@@ -152,7 +150,7 @@ class LocalArticlesScreen extends StatelessWidget {
                                         ).showSnackBar(
                                           SnackBar(
                                             content: Text(
-                                              '"${article.title}" deleted.',
+                                              '"${article.title}" dihapus.',
                                             ),
                                           ),
                                         );
