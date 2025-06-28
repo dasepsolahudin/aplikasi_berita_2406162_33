@@ -1,5 +1,3 @@
-// ignore_for_file: deprecated_member_use
-
 import 'package:inews/views/utils/form_validaror.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';

@@ -1,9 +1,6 @@
-// lib/views/widgets/main_scaffold.dart
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:inews/routes/route_name.dart';
-// Hapus import dart:ui karena BackdropFilter tidak lagi digunakan
-// import 'dart:ui';
 
 class MainScaffold extends StatelessWidget {
   final Widget child;

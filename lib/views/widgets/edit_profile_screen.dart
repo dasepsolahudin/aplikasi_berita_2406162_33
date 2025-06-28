@@ -1,6 +1,3 @@
-// lib/views/widgets/edit_profile_screen.dart
-// ignore_for_file: deprecated_member_use
-
 import 'dart:io';
 import 'package:inews/views/utils/form_validaror.dart';
 import 'package:flutter/material.dart';

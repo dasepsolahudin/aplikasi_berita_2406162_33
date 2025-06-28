@@ -1,6 +1,3 @@
-// lib/views/widgets/reset_password_screen.dart
-// ignore_for_file: deprecated_member_use, use_build_context_synchronously
-
 import 'package:inews/views/utils/form_validaror.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';

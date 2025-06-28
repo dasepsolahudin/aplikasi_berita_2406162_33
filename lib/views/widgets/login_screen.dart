@@ -1,7 +1,4 @@
-// lib/views/widgets/login_screen.dart
-// ignore_for_file: deprecated_member_use, use_build_context_synchronously
-
-import 'dart:ui'; // Diperlukan untuk ImageFilter.blur
+import 'dart:ui';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';

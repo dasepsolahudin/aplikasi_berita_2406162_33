@@ -6,8 +6,6 @@ import '../data/models/article_model.dart';
 
 class HomeController with ChangeNotifier {
   final NewsApiService _newsApiService = NewsApiService();
-  // Hapus _dbHelper
-  // final DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
   List<Article> _articles = [];
   List<Article> get articles => _articles;

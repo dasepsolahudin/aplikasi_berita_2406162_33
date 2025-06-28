@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:path_provider/path_provider.dart'; // Import path_provider
-import 'package:path/path.dart' as p; // Import path package with an alias
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 import '../data/models/article_model.dart';
 
 const String _localArticlesKey = 'local_articles_data';
